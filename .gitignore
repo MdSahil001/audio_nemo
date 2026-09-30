@@ -1,3 +1,4 @@
+# C build outputs and downloaded model weights
 *.o
 *.o.tmp
 *.exe
@@ -5,3 +6,34 @@
 *.ilk
 nemotron_asr
 *.bin
+
+# Local Python environment and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Downloaded benchmark audio (keep the script, report, and result tables)
+benchmarks/hinglish/data/
+
+# Local recordings, transcripts, and runtime logs
+*.mp3
+*.wav
+*.m4a
+*.flac
+*.ogg
+*.opus
+*.aac
+*.webm
+*.mp4
+/*.txt
+!/requirements*.txt
+*.log
+
+# Local machine files
+.DS_Store
+.env
+.env.*
+!.env.example

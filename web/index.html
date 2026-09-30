@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nemotron · Audio transcription</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-height: 100vh; background: #f5f6f4; color: #1b2927; }
+    main { width: min(100% - 36px, 760px); margin: 0 auto; padding: 72px 0 90px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: #146a5a; font-size: 14px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: #146a5a; color: white; }
+    h1 { margin: 34px 0 12px; font-size: clamp(34px, 6vw, 52px); line-height: 1.08; letter-spacing: -.055em; font-weight: 760; }
+    .lead { margin: 0 0 34px; color: #61716d; font-size: 17px; line-height: 1.55; }
+    .panel { background: #fff; border: 1px solid #e2e9e5; border-radius: 20px; box-shadow: 0 16px 45px #213a300a; padding: 28px; }
+    .section-label { margin: 0 0 16px; font-size: 13px; font-weight: 720; letter-spacing: .11em; text-transform: uppercase; color: #6b7a75; }
+    .dropzone { display: flex; min-height: 215px; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 25px; border: 2px dashed #b8cec5; border-radius: 14px; background: #f9fcfa; text-align: center; cursor: pointer; transition: background .15s, border-color .15s; }
+    .dropzone:hover, .dropzone.dragging, .dropzone:focus-within { background: #eff8f2; border-color: #278c70; }
+    .upload-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: #e4f3e9; color: #168063; }
+    .dropzone strong { font-size: 16px; }
+    .dropzone span:last-child { color: #768681; font-size: 13px; }
+    .dropzone input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .file-row { display: flex; align-items: center; gap: 10px; margin: 17px 0 0; color: #245c4d; font-size: 14px; }
+    .file-row svg { flex: none; }
+    .file-row span { overflow-wrap: anywhere; }
+    .file-row small { color: #84918b; white-space: nowrap; margin-left: auto; }
+    .actions { margin-top: 24px; display: flex; align-items: center; gap: 16px; }
+    button { font: inherit; cursor: pointer; }
+    .submit { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 10px; min-width: 180px; height: 46px; padding: 0 21px; color: #fff; background: #17745d; font-weight: 700; transition: background .15s; }
+    .submit:hover:not(:disabled) { background: #105c49; }
+    .submit:disabled { cursor: not-allowed; background: #a9c7ba; }
+    .hint { color: #8a9791; font-size: 13px; }
+    .spinner { width: 18px; height: 18px; border: 2px solid #ffffff75; border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status { min-height: 22px; margin: 18px 0 0; font-size: 14px; color: #4b7162; }
+    .status.error { color: #b13a37; }
+    .metrics-panel { margin-top: 24px; }
+    .metrics-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .metrics-head .section-label { margin: 0; }
+    .stage { color: #678277; font-size: 13px; }
+    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+    .metric { padding: 20px; border: 1px solid #edf1ec; border-radius: 12px; background: #f8faf8; }
+    .metric-name { display: block; margin-bottom: 9px; color: #74867b; font-size: 13px; }
+    .metric-value { font-size: 29px; font-weight: 750; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+    .metric-unit { margin-left: 4px; color: #678277; font-size: 14px; font-weight: 550; letter-spacing: 0; }
+    .metrics-note { margin: 14px 0 0; color: #8a9791; font-size: 12px; }
+    .result-panel { margin-top: 24px; }
+    .result-head { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+    .result-head .section-label { margin: 0; }
+    .copy { border: 1px solid #d8e5dc; background: #fff; color: #236c55; border-radius: 8px; padding: 8px 13px; font-size: 13px; font-weight: 700; }
+    .copy:hover:not(:disabled) { background: #f0f8f2; }
+    .copy:disabled { color: #a4b4aa; cursor: not-allowed; }
+    .transcript { min-height: 145px; margin: 20px 0 0; padding: 22px; border-radius: 12px; background: #f8faf8; border: 1px solid #edf1ec; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; line-height: 1.65; }
+    .placeholder { color: #98a59e; }
+    @media (max-width: 540px) { main { padding-top: 38px; } .panel { padding: 18px; } .actions { align-items: stretch; flex-direction: column; } .submit { width: 100%; } .metrics-grid { gap: 9px; } .metric { padding: 15px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><span class="brand-mark" aria-hidden="true">≋</span> Nemotron ASR</div>
+    <h1>Turn audio into text.</h1>
+    <p class="lead">Upload a recording and get its transcript here. Processing runs locally with the Nemotron speech model.</p>
+
+    <form id="form" class="panel">
+      <p class="section-label">Your audio</p>
+      <label id="dropzone" class="dropzone" for="audio-file">
+        <span class="upload-icon" aria-hidden="true">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m0 0-4 4m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
+        </span>
+        <strong>Choose a file or drag it here</strong>
+        <span>MP3, WAV, M4A, FLAC, OGG, AAC, MP4, or WebM · up to 200 MB</span>
+        <input id="audio-file" type="file" name="file" accept="audio/*,.mp3,.wav,.m4a,.flac,.ogg,.opus,.webm,.aac,.mp4">
+      </label>
+      <div id="file-row" class="file-row" hidden>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h6l5 5v12a1 1 0 0 1-1 1H8a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Z"/><path d="M14 3v5h5"/></svg>
+        <span id="file-name"></span><small id="file-size"></small>
+      </div>
+      <div class="actions">
+        <button id="submit" class="submit" type="submit" disabled>
+          <span id="spinner" class="spinner" hidden aria-hidden="true"></span>
+          <span id="button-text">Transcribe audio</span>
+        </button>
+        <span class="hint">The transcript appears below when ready.</span>
+      </div>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </form>
+
+    <section class="panel metrics-panel" aria-labelledby="metrics-heading">
+      <div class="metrics-head">
+        <h2 id="metrics-heading" class="section-label">Model usage</h2>
+        <span id="stage" class="stage" aria-live="polite">Idle</span>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric"><span class="metric-name">CPU</span><span id="cpu" class="metric-value">0.0</span><span class="metric-unit">%</span></div>
+        <div class="metric"><span class="metric-name">RAM</span><span id="ram" class="metric-value">0.0</span><span class="metric-unit">MB</span></div>
+      </div>
+      <p class="metrics-note">Live usage of the recognizer process. CPU may exceed 100% when it uses multiple cores.</p>
+    </section>
+
+    <section class="panel result-panel" aria-labelledby="result-heading">
+      <div class="result-head">
+        <h2 id="result-heading" class="section-label">Transcript</h2>
+        <button id="copy" class="copy" type="button" disabled>Copy text</button>
+      </div>
+      <div id="transcript" class="transcript placeholder" aria-live="polite">Your transcript will appear here.</div>
+    </section>
+  </main>
+  <script>
+    const form = document.querySelector('#form');
+    const input = document.querySelector('#audio-file');
+    const zone = document.querySelector('#dropzone');
+    const fileRow = document.querySelector('#file-row');
+    const fileName = document.querySelector('#file-name');
+    const fileSize = document.querySelector('#file-size');
+    const submit = document.querySelector('#submit');
+    const spinner = document.querySelector('#spinner');
+    const buttonText = document.querySelector('#button-text');
+    const status = document.querySelector('#status');
+    const transcript = document.querySelector('#transcript');
+    const copy = document.querySelector('#copy');
+    const stage = document.querySelector('#stage');
+    const cpu = document.querySelector('#cpu');
+    const ram = document.querySelector('#ram');
+    let selectedFile = null;
+    let resultText = '';
+    let busy = false;
+    let metricsTimer = null;
+
+    async function refreshMetrics() {
+      try {
+        const response = await fetch('/api/metrics', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        stage.textContent = data.stage;
+        cpu.textContent = Number(data.cpu_percent).toFixed(1);
+        ram.textContent = Number(data.ram_mb).toFixed(1);
+      } catch { /* Keep the last reading if a poll fails. */ }
+    }
+
+    function setFile(file) {
+      if (busy) return;
+      selectedFile = file || null;
+      fileRow.hidden = !selectedFile;
+      if (selectedFile) {
+        fileName.textContent = selectedFile.name;
+        fileSize.textContent = `${(selectedFile.size / 1024 / 1024).toFixed(1)} MB`;
+      }
+      submit.disabled = !selectedFile;
+      status.textContent = '';
+      status.classList.remove('error');
+    }
+
+    input.addEventListener('change', () => setFile(input.files[0]));
+    for (const eventName of ['dragenter', 'dragover']) {
+      zone.addEventListener(eventName, event => {
+        event.preventDefault();
+        if (!busy) zone.classList.add('dragging');
+      });
+    }
+    for (const eventName of ['dragleave', 'drop']) {
+      zone.addEventListener(eventName, event => {
+        event.preventDefault();
+        zone.classList.remove('dragging');
+      });
+    }
+    zone.addEventListener('drop', event => setFile(event.dataTransfer.files[0]));
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!selectedFile || busy) return;
+      if (selectedFile.size > 200 * 1024 * 1024) {
+        status.textContent = 'Choose a file smaller than 200 MB.';
+        status.classList.add('error');
+        return;
+      }
+      busy = true;
+      submit.disabled = true;
+      input.disabled = true;
+      spinner.hidden = false;
+      buttonText.textContent = 'Processing audio…';
+      status.classList.remove('error');
+      status.textContent = 'Processing your recording. This may take a few minutes.';
+      resultText = '';
+      copy.disabled = true;
+      transcript.classList.add('placeholder');
+      transcript.textContent = 'Transcribing…';
+      stage.textContent = 'Uploading audio';
+      metricsTimer = setInterval(refreshMetrics, 1000);
+      refreshMetrics();
+
+      try {
+        const body = new FormData();
+        body.append('file', selectedFile, selectedFile.name);
+        const response = await fetch('/api/transcribe', { method: 'POST', body });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'Transcription failed.');
+        resultText = data.text || '';
+        transcript.textContent = resultText || 'No speech was detected in this recording.';
+        transcript.classList.toggle('placeholder', !resultText);
+        copy.disabled = !resultText;
+        status.textContent = 'Transcription complete.';
+      } catch (error) {
+        transcript.textContent = 'Your transcript will appear here.';
+        status.textContent = error.message || 'Could not process this audio.';
+        status.classList.add('error');
+      } finally {
+        clearInterval(metricsTimer);
+        await refreshMetrics();
+        busy = false;
+        submit.disabled = !selectedFile;
+        input.disabled = false;
+        spinner.hidden = true;
+        buttonText.textContent = 'Transcribe audio';
+      }
+    });
+
+    copy.addEventListener('click', async () => {
+      if (!resultText) return;
+      try {
+        await navigator.clipboard.writeText(resultText);
+        copy.textContent = 'Copied';
+        setTimeout(() => { copy.textContent = 'Copy text'; }, 1800);
+      } catch {
+        status.textContent = 'Could not copy text to the clipboard.';
+        status.classList.add('error');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -43,6 +43,32 @@ hf download kdrkdrkdr/nemotron-3.5-asr-streaming-0.6b-w8a8 \
 converted to int8 — see [Convert it yourself](#convert-it-yourself-optional) to
 rebuild it from the original `.nemo`.
 
+## Web transcription interface
+
+The local web page accepts MP3, WAV, M4A, MP4, FLAC, OGG, Opus, WebM, and AAC
+files. It displays a processing indicator, then the transcript below the upload
+form. It also shows live CPU and RAM use of the recognizer process. Install
+`ffmpeg` first, then build the recognizer and download the model as
+shown in [Quick start](#quick-start).
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-web.txt
+.venv/bin/uvicorn web_app:app --host 127.0.0.1 --port 8000
+```
+
+Open <http://127.0.0.1:8000>. The `POST /api/transcribe` endpoint accepts a
+multipart `file` field and returns `{"text": "..."}`. Files are limited to
+200 MB, and only one transcription runs at a time. Uploaded and converted files
+are removed after each request. Set `NEMO_THREADS` to choose 1–16 recognizer
+threads (default 4). `GET /api/metrics` reports the active stage, process CPU
+percentage, and process resident RAM in MB. CPU may exceed 100% when multiple
+cores are in use.
+
+For measured latency, CPU, RAM, and transcription accuracy on a sample of the
+[ujs/hinglish test dataset](https://huggingface.co/datasets/ujs/hinglish), see the
+[Hinglish benchmark](benchmarks/hinglish/README.md).
+
 ## Real-time from a microphone
 
 The runtime reads **raw s16le, 16 kHz, mono** from stdin via `--stdin` and prints
